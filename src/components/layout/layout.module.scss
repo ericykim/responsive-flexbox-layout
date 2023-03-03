@@ -1,0 +1,223 @@
+@use 'sass:math';
+
+$gutter-width: 24px;
+$outer-margin: 48px;
+$half-gutter-width: calc($gutter-width * 0.5);
+$gutter-compensation: calc(($gutter-width * 0.5) * -1);
+$columns: 12;
+$xs-min: 0rem;
+$sm-min: 30rem;
+$md-min: 48rem;
+$lg-min: 64rem;
+$xl-min: 75rem;
+$viewport: 'xl', 'lg', 'md', 'sm', 'xs';
+
+/*
+************
+Sass Mixin functions
+************
+*/
+
+// if the container is not fluid, the width will default to mobile first unless this style is overridden in the parent
+// you should override the container style if you want a custom width
+@mixin containerSize($size) {
+    .container {
+        width: calc($size - $gutter-width);
+        max-width: 100%;
+    }
+}
+
+// this creates all of the css classes for the columns given the breakpoint
+// when you set a prop on a column it will add the cooresponding class to the component
+@mixin setColumnForBreakpoint($breakpoint) {
+    .col-#{$breakpoint} {
+        flex-grow: 1;
+        flex-basis: 0;
+        max-width: 100%;
+    }
+
+    .start-#{$breakpoint} {
+        justify-content: flex-start;
+        text-align: start;
+    }
+
+    .center-#{$breakpoint} {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .end-#{$breakpoint} {
+        justify-content: flex-end;
+        text-align: end;
+    }
+
+    .top-#{$breakpoint} {
+        align-items: flex-start;
+    }
+
+    .middle-#{$breakpoint} {
+        align-items: center;
+    }
+
+    .bottom-#{$breakpoint} {
+        align-items: flex-end;
+    }
+
+    .around-#{$breakpoint} {
+        justify-content: space-around;
+    }
+
+    .between-#{$breakpoint} {
+        justify-content: space-between;
+    }
+
+    .first-#{$breakpoint} {
+        order: -1;
+    }
+
+    .last-#{$breakpoint} {
+        order: 1;
+    }
+
+    .initial-order-#{$breakpoint} {
+        order: initial;
+    }
+
+    // loop to create classes for each column and offset column
+    @for $i from 1 through $columns {
+        .col-#{$breakpoint}-#{$i} {
+            box-sizing: border-box;
+            flex-basis: calc((100% / (#{$columns} / #{$i})));
+            max-width: calc((100% / (#{$columns} / #{$i})));
+            padding-right: $half-gutter-width;
+            padding-left: $half-gutter-width;
+        }
+
+        .col-#{$breakpoint}-offset-#{$i} {
+            box-sizing: border-box;
+            margin-left: calc((100% / (#{$columns} / #{$i})));
+            padding-right: $half-gutter-width;
+            padding-left: $half-gutter-width;
+        }
+    }
+}
+
+@mixin defaultColWidth($breakpoint) {
+    .col-#{$breakpoint} {
+        flex: 0 0 auto;
+        flex-basis: 100%;
+        max-width: 100%;
+    }
+    @for $i from 1 through $columns {
+        .col-#{$breakpoint}-#{$i} {
+            box-sizing: border-box;
+            flex: 0 0 auto;
+            flex-basis: 100%;
+            max-width: 100%;
+        }
+
+        .col-#{$breakpoint}-offset-#{$i} {
+            flex: 0 0 auto;
+            flex-basis: 100%;
+            max-width: 100%;
+        }
+    }
+}
+/*
+************
+Styles
+************
+*/
+// layouts should be created with a mobile first principle
+// the xs breakpoint is the default, so default styling should happen using the xs attribute
+// setting the defaultColWidth makes the columns take up 100% of the width if the xs was not set
+@each $breakpoint in $viewport {
+    @include defaultColWidth($breakpoint);
+}
+// xs is the default so there is no media query
+@include setColumnForBreakpoint('xs');
+
+/*
+min-width = greater than or equal to $breakpoint
+*/
+@media only screen and (min-width: $sm-min) {
+    @include containerSize($sm-min);
+    @include setColumnForBreakpoint('sm');
+}
+@media only screen and (min-width: $md-min) {
+    @include containerSize($md-min);
+    @include setColumnForBreakpoint('md');
+}
+@media only screen and (min-width: $lg-min) {
+    @include containerSize($lg-min);
+    @include setColumnForBreakpoint('lg');
+}
+@media only screen and (min-width: $xl-min) {
+    @include containerSize($xl-min);
+    @include setColumnForBreakpoint('xl');
+}
+
+@media only screen and (max-width: $sm-min) {
+    .col-xs-hidden {
+        display: none;
+    }
+}
+@media only screen and (min-width: calc($sm-min + 1px)) and (max-width: calc($md-min - 1px)) {
+    .col-sm-hidden {
+        display: none;
+    }
+}
+@media only screen and (min-width: $md-min) and (max-width: calc($lg-min - 1px)) {
+    .col-md-hidden {
+        display: none;
+    }
+}
+@media only screen and (min-width: $lg-min) and (max-width: calc($xl-min - 1px)) {
+    .col-lg-hidden {
+        display: none;
+    }
+}
+@media only screen and (min-width: $xl-min) {
+    .col-xl-hidden {
+        display: none;
+    }
+}
+
+.container {
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+    padding-right: 8px;
+    padding-left: 8px;
+    padding-bottom: 100px;
+    padding-top: 100px;
+}
+
+.container-fluid {
+    margin-right: $outer-margin;
+    margin-left: $outer-margin;
+}
+
+.row {
+    box-sizing: border-box;
+    display: flex;
+    flex: 0 1 auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-right: $gutter-compensation;
+    margin-left: $gutter-compensation;
+}
+
+.row.reverse {
+    flex-direction: row-reverse;
+}
+
+.col.reverse {
+    flex-direction: column-reverse;
+}
+
+.container.debug > .row > [class*='col'],
+.container-fluid.debug > .row > [class*='col'] {
+    border: 1px solid red;
+    box-sizing: border-box;
+}
